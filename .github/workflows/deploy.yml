@@ -23,3 +23,13 @@ jobs:
         run: |
           docker build -t vorasakshii/apache2-cicd:latest .
           docker push vorasakshii/apache2-cicd:latest
+      - name: Deploy to AWS EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker pull vorasakshii/apache2-cicd:latest
+            sudo docker rm -f apache2-web || true
+            sudo docker run -d --restart unless-stopped --name apache2-web -p 80:80 vorasakshii/apache2-cicd:latest
